@@ -15,14 +15,17 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Install C++ MFC Support
+    - name: Install MFC for VS 2022
       shell: pwsh
       run: |
-        $vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
         $installer = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe"
-        Write-Host "正在后台静默安装 MFC 库，请稍候（预计耗时 2-5 分钟）..."
-        $process = Start-Process -FilePath $installer -ArgumentList "modify", "--installPath", "`"$vsPath`"", "--add", "Microsoft.VisualStudio.Component.VC.ATLMFC", "--quiet", "--norestart" -PassThru -Wait
-        Write-Host "MFC 安装完成，退出码: $($process.ExitCode)"
+        $vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
+        
+        Write-Host "正在安装 v143 MFC 库..."
+        # 同时安装 x86/x64 和 ARM64 的 v143 MFC 组件（即对应 VC++ v170 工具集）
+        $process = Start-Process -FilePath $installer -ArgumentList "modify --installPath `"$vsPath`" --add Microsoft.VisualStudio.Component.VC.14.38.17.8.MFC --add Microsoft.VisualStudio.Component.VC.ATLMFC --quiet --norestart" -PassThru -Wait
+        
+        Write-Host "安装完成，退出码: $($process.ExitCode)"
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
