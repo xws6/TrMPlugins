@@ -16,8 +16,20 @@ jobs:
         submodules: recursive
 
     - name: Install C++ MFC Support
+      shell: pwsh
       run: |
-        choco install visualstudio2022-mfc -y
+        $vsPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
+        $installer = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe"
+        
+        Write-Host "开始安装 VC++ v143 MFC 组件..."
+        Start-Process -FilePath $installer -ArgumentList "modify --installPath `"$vsPath`" --add Microsoft.VisualStudio.Component.VC.ATLMFC --quiet --norestart" -Wait
+        
+        # 关键步骤：强制等待后台安装引擎 vs_setup_engine 彻底结束
+        Write-Host "等待后台安装进程写入完成..."
+        while (Get-Process -Name "vs_installer", "vs_setup_engine" -ErrorAction SilentlyContinue) {
+            Start-Sleep -Seconds 5
+        }
+        Write-Host "MFC 组件安装完成！"
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
