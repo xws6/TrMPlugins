@@ -1,0 +1,31 @@
+name: Build Plugins
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: # 支持手动触发编译
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Build Solution
+      run: |
+        msbuild Plugins.sln /p:Configuration=Release /p:Platform="x86"
+        msbuild Plugins.sln /p:Configuration=Release /p:Platform="x64"
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: TrafficMonitor-Plugins-Build
+        path: |
+          **/*.dll
