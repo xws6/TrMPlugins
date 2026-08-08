@@ -15,6 +15,14 @@ jobs:
       with:
         submodules: recursive
 
+    - name: Install C++ MFC Support
+      shell: pwsh
+      run: |
+        $vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
+        $installer = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe"
+        Write-Host "正在为 Visual Studio 自动安装 MFC 库..."
+        Start-Process $installer -ArgumentList "modify --installPath `"$vsPath`" --add Microsoft.VisualStudio.Component.VC.ATLMFC --passive --norestart" -Wait
+
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
 
